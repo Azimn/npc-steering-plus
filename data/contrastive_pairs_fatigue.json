@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "description": "Contrastive pairs for a direct fatigue probe. Pairs emphasize bodily and cognitive depletion versus restoration while avoiding explicit mood words where possible.",
+  "axes": {
+    "FATIGUE": {
+      "label": "fatigue",
+      "positive_pole": "depleted",
+      "negative_pole": "rested",
+      "pairs": [
+        {"pos": "My body feels depleted after sustained effort.", "neg": "My body feels restored after sufficient rest."},
+        {"pos": "I have almost no reserve left for another task.", "neg": "I have plenty of reserve left for another task."},
+        {"pos": "Keeping my attention on this takes unusual effort.", "neg": "Keeping my attention on this takes almost no effort."},
+        {"pos": "My muscles feel used up and heavy from exertion.", "neg": "My muscles feel recovered and ready after rest."},
+        {"pos": "I need recovery before I can sustain more work.", "neg": "I can sustain more work before I need recovery."},
+        {"pos": "My mental endurance is nearly spent.", "neg": "My mental endurance feels fully restored."},
+        {"pos": "Even simple effort now draws on my remaining reserves.", "neg": "Simple effort barely touches my available reserves."},
+        {"pos": "I feel physically worn down from continued activity.", "neg": "I feel physically renewed after a full recovery."},
+        {"pos": "My capacity to keep going is running low.", "neg": "My capacity to keep going is fully replenished."},
+        {"pos": "I am operating on depleted energy reserves.", "neg": "I am operating on replenished energy reserves."},
+        {"pos": "Another demanding task would require pushing through exhaustion.", "neg": "Another demanding task would fit comfortably within my energy."},
+        {"pos": "My system is signaling that sustained effort should stop for recovery.", "neg": "My system is signaling that sustained effort can continue without recovery."}
+      ]
+    }
+  }
+}

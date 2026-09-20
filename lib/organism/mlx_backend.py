@@ -7,7 +7,6 @@ from typing import Mapping, Sequence
 
 import numpy as np
 
-from ..mlx_steering import extract_last_token_hiddens, unwrap, wrap_steering
 from ..probes import ProbeBundle
 from .backend import CognitiveResponse
 from .mlx_bridge import build_mlx_offsets
@@ -48,6 +47,7 @@ class MLXCognitiveBackend:
     ) -> CognitiveResponse:
         from mlx_lm import generate
         from mlx_lm.sample_utils import make_logits_processors, make_sampler
+        from ..mlx_steering import unwrap, wrap_steering
 
         prompt = self.tokenizer.apply_chat_template(
             list(messages),
@@ -99,6 +99,8 @@ class MLXCognitiveBackend:
         missing = sorted(axis for axis in axes if axis not in self.probes.selected_layers)
         if missing:
             raise KeyError(f"Readback axes missing selected layers: {missing}")
+
+        from ..mlx_steering import extract_last_token_hiddens
 
         layers = sorted({self.probes.selected_layers[axis] for axis in axes})
         hiddens = extract_last_token_hiddens(

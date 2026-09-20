@@ -1,9 +1,9 @@
 name: FATIGUE MLX experiment
 
 on:
-  push:
+  pull_request:
     branches:
-      - persistent-organism-v0.1
+      - main
     paths:
       - ".github/workflows/fatigue-mlx-experiment.yml"
       - "data/contrastive_pairs_fatigue.json"

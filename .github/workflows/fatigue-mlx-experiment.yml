@@ -1,0 +1,102 @@
+name: FATIGUE MLX experiment
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/fatigue-mlx-experiment.yml"
+      - "data/contrastive_pairs_fatigue.json"
+      - "lib/organism/**"
+      - "scripts/15_analyze_fatigue_probe.py"
+      - "scripts/16_calibrate_fatigue_steering.py"
+      - "scripts/17_fatigue_causal_ablation.py"
+
+permissions:
+  contents: read
+
+jobs:
+  fatigue-experiment:
+    runs-on: macos-15
+    timeout-minutes: 300
+
+    steps:
+      - name: Checkout experiment branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Show runner resources
+        run: |
+          uname -a
+          python --version
+          sysctl -n hw.memsize
+          df -h .
+
+      - name: Install MLX experiment dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[mlx]"
+
+      - name: Run CPU-side organism tests
+        run: |
+          python -m unittest tests.test_organism tests.test_probe_analysis
+
+      - name: Extract candidate FATIGUE probes
+        run: |
+          python scripts/02_extract_probes.py             --pairs data/contrastive_pairs_fatigue.json             --layers 11 15 19 23 27             --output artifacts/probes_Qwen3.5-9B-MLX-4bit_fatigue.pkl
+
+      - name: Analyze FATIGUE geometry against VAD
+        run: |
+          python scripts/15_analyze_fatigue_probe.py             --fatigue-probes artifacts/probes_Qwen3.5-9B-MLX-4bit_fatigue.pkl             --vad-probes artifacts/probes_Qwen3.5-9B-MLX-4bit.pkl
+
+      - name: Select strongest geometry candidates
+        id: geometry_layers
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          data = json.load(open("artifacts/fatigue_probe_geometry.json"))
+          rows = sorted(data["rows"], key=lambda row: row["geometry_score"], reverse=True)
+          passing = [row for row in rows if row["passes_geometry_gate"]]
+          chosen = (passing or rows)[:2]
+          print("layers=" + " ".join(str(row["layer"]) for row in chosen))
+          PY
+
+      - name: Calibrate FATIGUE steering
+        run: |
+          python scripts/16_calibrate_fatigue_steering.py             --fatigue-probes artifacts/probes_Qwen3.5-9B-MLX-4bit_fatigue.pkl             --vad-probes artifacts/probes_Qwen3.5-9B-MLX-4bit.pkl             --layers ${{ steps.geometry_layers.outputs.layers }}             --alphas -25 -12.5 0 12.5 25             --max-tokens 50
+
+      - name: Read calibration gate
+        id: fatigue_gate
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          data = json.load(open("artifacts/fatigue_steering_calibration.json"))
+          print("passed=" + ("true" if data["recommendation_passed_gate"] else "false"))
+          print("layer=" + str(data["recommended_layer"]))
+          print("gain=" + str(data["recommended_gain_cap"]))
+          PY
+
+      - name: Run matched causal ablation
+        if: steps.fatigue_gate.outputs.passed == 'true'
+        run: |
+          python scripts/17_fatigue_causal_ablation.py             --fatigue-probes artifacts/probes_Qwen3.5-9B-MLX-4bit_fatigue.pkl             --vad-probes artifacts/probes_Qwen3.5-9B-MLX-4bit.pkl             --layer "${{ steps.fatigue_gate.outputs.layer }}"             --gain "${{ steps.fatigue_gate.outputs.gain }}"             --seeds 11 23 37             --max-tokens 50
+
+      - name: Upload experiment outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fatigue-mlx-experiment
+          if-no-files-found: warn
+          path: |
+            artifacts/probes_Qwen3.5-9B-MLX-4bit_fatigue.pkl
+            artifacts/fatigue_probe_geometry.json
+            artifacts/fatigue_probe_geometry.md
+            artifacts/fatigue_steering_calibration.json
+            artifacts/fatigue_steering_calibration.md
+            artifacts/fatigue_causal_ablation.json
+            artifacts/fatigue_causal_ablation.md
+            runs/fatigue_causal_ablation.jsonl

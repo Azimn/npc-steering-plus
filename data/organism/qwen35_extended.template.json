@@ -1,0 +1,15 @@
+{
+  "profile_version": 1,
+  "model_id": "mlx-community/Qwen3.5-9B-MLX-4bit",
+  "bindings": [
+    {"source_axis":"valence","probe_axis":"V","gain":25.0,"center":0.0,"max_abs_alpha":25.0,"enabled":true,"feedback_gain":0.10,"readback_center":0.0,"readback_scale":1.0},
+    {"source_axis":"arousal","probe_axis":"A","gain":25.0,"center":0.0,"max_abs_alpha":25.0,"enabled":true,"feedback_gain":0.10,"readback_center":0.0,"readback_scale":1.0},
+    {"source_axis":"dominance","probe_axis":"D","gain":25.0,"center":0.0,"max_abs_alpha":25.0,"enabled":true,"feedback_gain":0.10,"readback_center":0.0,"readback_scale":1.0},
+    {"source_axis":"fatigue","probe_axis":"FATIGUE","gain":25.0,"center":0.5,"max_abs_alpha":25.0,"enabled":false,"feedback_gain":0.0,"readback_center":0.5,"readback_scale":0.5},
+    {"source_axis":"pain","probe_axis":"PAIN","gain":25.0,"center":0.0,"max_abs_alpha":25.0,"enabled":false,"feedback_gain":0.0,"readback_center":0.5,"readback_scale":0.5},
+    {"source_axis":"threat","probe_axis":"THREAT","gain":25.0,"center":0.0,"max_abs_alpha":25.0,"enabled":false,"feedback_gain":0.0,"readback_center":0.5,"readback_scale":0.5},
+    {"source_axis":"affiliation_need","probe_axis":"AFFILIATION","gain":25.0,"center":0.0,"max_abs_alpha":25.0,"enabled":false,"feedback_gain":0.0,"readback_center":0.5,"readback_scale":0.5},
+    {"source_axis":"curiosity","probe_axis":"CURIOSITY","gain":25.0,"center":0.5,"max_abs_alpha":25.0,"enabled":false,"feedback_gain":0.0,"readback_center":0.5,"readback_scale":0.5},
+    {"source_axis":"competence_need","probe_axis":"COMPETENCE","gain":25.0,"center":0.0,"max_abs_alpha":25.0,"enabled":false,"feedback_gain":0.0,"readback_center":0.5,"readback_scale":0.5}
+  ]
+}

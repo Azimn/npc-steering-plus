@@ -53,9 +53,21 @@ jobs:
         run: |
           python scripts/15_analyze_fatigue_probe.py             --fatigue-probes artifacts/probes_Qwen3.5-9B-MLX-4bit_fatigue.pkl             --vad-probes artifacts/probes_Qwen3.5-9B-MLX-4bit.pkl
 
+      - name: Select strongest geometry candidates
+        id: geometry_layers
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          data = json.load(open("artifacts/fatigue_probe_geometry.json"))
+          rows = sorted(data["rows"], key=lambda row: row["geometry_score"], reverse=True)
+          passing = [row for row in rows if row["passes_geometry_gate"]]
+          chosen = (passing or rows)[:2]
+          print("layers=" + " ".join(str(row["layer"]) for row in chosen))
+          PY
+
       - name: Calibrate FATIGUE steering
         run: |
-          python scripts/16_calibrate_fatigue_steering.py             --fatigue-probes artifacts/probes_Qwen3.5-9B-MLX-4bit_fatigue.pkl             --vad-probes artifacts/probes_Qwen3.5-9B-MLX-4bit.pkl             --alphas -25 -12.5 0 12.5 25             --max-tokens 50
+          python scripts/16_calibrate_fatigue_steering.py             --fatigue-probes artifacts/probes_Qwen3.5-9B-MLX-4bit_fatigue.pkl             --vad-probes artifacts/probes_Qwen3.5-9B-MLX-4bit.pkl             --layers ${{ steps.geometry_layers.outputs.layers }}             --alphas -25 -12.5 0 12.5 25             --max-tokens 50
 
       - name: Read calibration gate
         id: fatigue_gate

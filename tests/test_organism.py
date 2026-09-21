@@ -27,7 +27,14 @@ class FakeBackend:
 class PersistentOrganismTests(unittest.TestCase):
     def test_state_persists_across_reload(self):
         state = OrganismState("aster")
-        state.apply({"fatigue": 0.4, "threat": 0.7})
+        state.apply(
+            {
+                "fatigue": 0.4,
+                "thirst": 0.3,
+                "thermal": -0.4,
+                "threat": 0.7,
+            }
+        )
         state.step(5.0)
         with tempfile.TemporaryDirectory() as td:
             path = Path(td) / "state.json"
@@ -36,7 +43,27 @@ class PersistentOrganismTests(unittest.TestCase):
         self.assertEqual(loaded.organism_id, "aster")
         self.assertEqual(loaded.revision, state.revision)
         self.assertAlmostEqual(loaded.get("fatigue"), state.get("fatigue"))
+        self.assertAlmostEqual(loaded.get("thirst"), state.get("thirst"))
+        self.assertAlmostEqual(loaded.get("thermal"), state.get("thermal"))
         self.assertAlmostEqual(loaded.get("threat"), state.get("threat"))
+
+    def test_virtual_body_axes_are_bounded(self):
+        state = OrganismState("aster")
+        state.set("thirst", 5.0)
+        state.set("thermal", -5.0)
+        self.assertEqual(state.get("thirst"), 1.0)
+        self.assertEqual(state.get("thermal"), -1.0)
+
+        state.set("thermal", 5.0)
+        self.assertEqual(state.get("thermal"), 1.0)
+
+    def test_thermal_state_relaxes_toward_comfort(self):
+        state = OrganismState("aster", values={"thermal": -1.0})
+        before = state.get("thermal")
+        state.step(60.0)
+        after = state.get("thermal")
+        self.assertGreater(after, before)
+        self.assertLess(after, 0.0)
 
     def test_model_swap_keeps_state(self):
         state = OrganismState("aster", values={"fatigue": 0.8})

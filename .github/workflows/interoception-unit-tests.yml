@@ -1,0 +1,46 @@
+name: Interoception unit tests
+
+on:
+  push:
+    branches:
+      - virtual-body-interoception-v0.1
+    paths:
+      - "lib/organism/**"
+      - "tests/test_organism.py"
+      - "tests/test_interoception_vectors.py"
+      - "tests/test_probe_analysis.py"
+      - ".github/workflows/interoception-unit-tests.yml"
+  pull_request:
+    paths:
+      - "lib/organism/**"
+      - "tests/test_organism.py"
+      - "tests/test_interoception_vectors.py"
+      - "tests/test_probe_analysis.py"
+      - ".github/workflows/interoception-unit-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install "numpy>=1.26"
+
+      - name: Run organism and vector tests
+        run: |
+          python -m unittest \
+            tests.test_organism \
+            tests.test_probe_analysis \
+            tests.test_interoception_vectors

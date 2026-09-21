@@ -37,6 +37,8 @@ DEFAULT_AXIS_SPECS: dict[str, AxisSpec] = {
     "stress": AxisSpec("stress", 0.0, 1.0, 0.0, 300.0),
     "fatigue": AxisSpec("fatigue", 0.0, 1.0, 0.05, 21_600.0, 0.000035),
     "hunger": AxisSpec("hunger", 0.0, 1.0, 0.10, 28_800.0, 0.000025),
+    "thirst": AxisSpec("thirst", 0.0, 1.0, 0.05, 21_600.0, 0.000030),
+    "thermal": AxisSpec("thermal", -1.0, 1.0, 0.0, 300.0),
     "pain": AxisSpec("pain", 0.0, 1.0, 0.0, 900.0),
     "threat": AxisSpec("threat", 0.0, 1.0, 0.0, 45.0),
     "affiliation_need": AxisSpec("affiliation_need", 0.0, 1.0, 0.20, 14_400.0, 0.000010),

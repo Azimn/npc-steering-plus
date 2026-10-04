@@ -1,7 +1,7 @@
 [project]
 name = "driver-affect-sim"
-version = "0.1.0"
-description = "Persona-driven driver affect simulator for AV scenario generation."
+version = "0.2.0"
+description = "Persistent virtual-body and activation-steering research substrate for generative agents."
 requires-python = ">=3.11"
 dependencies = [
   "pydantic>=2.6",
@@ -9,16 +9,17 @@ dependencies = [
 
 [project.optional-dependencies]
 mlx = [
-  # MLX path: probe extraction and steering on Apple Silicon. The
-  # default model is mlx-community/Qwen3.5-9B-MLX-4bit; any MLX-format
-  # decoder LLM with `model.layers[i]` accessible should work.
   "mlx>=0.30",
   "mlx-lm>=0.30",
   "numpy>=1.26",
 ]
+hf = [
+  "huggingface-hub>=0.20",
+  "transformers>=4.40",
+  "torch>=2.2",
+  "numpy>=1.26",
+]
 sim = [
-  # 02_drive_in_sim.py (Phase D stretch). highway-env is the cheapest
-  # gym-style driving sim with merge scenarios out of the box.
   "highway-env>=1.10",
   "gymnasium>=0.29",
   "numpy>=1.26",
@@ -28,11 +29,6 @@ viz = [
   "numpy>=1.26",
 ]
 audit = [
-  # Cross-modal audit: TTS each LLM utterance, push through
-  # `matbee/whisper-to-vad` ONNX, compare with the probe-based felt_VAD
-  # readback. See `scripts/12_audio_audit.py`. macOS `say` is the
-  # default TTS (zero-dep); change `synthesize_speech` if running
-  # elsewhere.
   "huggingface-hub>=0.20",
   "transformers>=4.40",
   "torch>=2.2",

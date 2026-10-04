@@ -9,6 +9,9 @@ from pathlib import Path
 from typing import Mapping
 
 
+PHYSIOLOGICAL_AXES = frozenset({"fatigue", "hunger", "thirst", "thermal", "pain"})
+
+
 @dataclass(frozen=True)
 class AxisSpec:
     name: str
@@ -28,6 +31,21 @@ class AxisSpec:
 
     def clamp(self, value: float) -> float:
         return max(self.lo, min(self.hi, float(value)))
+
+    def integrate(self, value: float, dt_s: float) -> float:
+        """Exact solution of dx/dt = -(x-baseline)/tau + drift.
+
+        Using the closed-form solution removes scheduler/tick-size artifacts.
+        """
+
+        dt_s = float(dt_s)
+        if dt_s < 0.0:
+            raise ValueError("dt_s must be non-negative")
+        if dt_s == 0.0:
+            return self.clamp(value)
+        equilibrium = self.baseline + self.drift_per_s * self.tau_s
+        evolved = equilibrium + (float(value) - equilibrium) * math.exp(-dt_s / self.tau_s)
+        return self.clamp(evolved)
 
 
 DEFAULT_AXIS_SPECS: dict[str, AxisSpec] = {
@@ -53,7 +71,7 @@ class OrganismState:
     values: dict[str, float] = field(default_factory=dict)
     age_s: float = 0.0
     revision: int = 0
-    schema_version: int = 1
+    schema_version: int = 2
     specs: dict[str, AxisSpec] = field(default_factory=lambda: dict(DEFAULT_AXIS_SPECS), repr=False)
 
     def __post_init__(self) -> None:
@@ -68,6 +86,7 @@ class OrganismState:
         self.values = merged
         self.age_s = max(0.0, float(self.age_s))
         self.revision = max(0, int(self.revision))
+        self.schema_version = 2
 
     def get(self, axis: str) -> float:
         return self.values[axis]
@@ -91,15 +110,13 @@ class OrganismState:
         if dt_s == 0:
             return
         for name, spec in self.specs.items():
-            x = self.values[name]
-            recovered = spec.baseline + (x - spec.baseline) * math.exp(-dt_s / spec.tau_s)
-            self.values[name] = spec.clamp(recovered + spec.drift_per_s * dt_s)
+            self.values[name] = spec.integrate(self.values[name], dt_s)
         self.age_s += dt_s
         self.revision += 1
 
     def snapshot(self) -> dict:
         return {
-            "schema_version": self.schema_version,
+            "schema_version": 2,
             "organism_id": self.organism_id,
             "age_s": self.age_s,
             "revision": self.revision,
@@ -116,14 +133,15 @@ class OrganismState:
     @classmethod
     def load(cls, path: str | Path, *, specs: Mapping[str, AxisSpec] | None = None) -> "OrganismState":
         blob = json.loads(Path(path).read_text())
-        if blob.get("schema_version") != 1:
-            raise ValueError(f"Unsupported organism schema_version: {blob.get('schema_version')!r}")
+        version = int(blob.get("schema_version", 1))
+        if version not in (1, 2):
+            raise ValueError(f"Unsupported organism schema_version: {version!r}")
         return cls(
             organism_id=blob["organism_id"],
             values=blob.get("values", {}),
             age_s=blob.get("age_s", 0.0),
             revision=blob.get("revision", 0),
-            schema_version=1,
+            schema_version=2,
             specs=dict(specs or DEFAULT_AXIS_SPECS),
         )
 

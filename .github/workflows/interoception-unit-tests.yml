@@ -4,18 +4,17 @@ on:
   push:
     branches:
       - virtual-body-interoception-v0.1
+      - virtual-body-homeostasis-v0.2
     paths:
       - "lib/organism/**"
-      - "tests/test_organism.py"
-      - "tests/test_interoception_vectors.py"
-      - "tests/test_probe_analysis.py"
+      - "tests/**"
+      - "pyproject.toml"
       - ".github/workflows/interoception-unit-tests.yml"
   pull_request:
     paths:
       - "lib/organism/**"
-      - "tests/test_organism.py"
-      - "tests/test_interoception_vectors.py"
-      - "tests/test_probe_analysis.py"
+      - "tests/**"
+      - "pyproject.toml"
       - ".github/workflows/interoception-unit-tests.yml"
 
 permissions:
@@ -38,9 +37,6 @@ jobs:
           python -m pip install -e .
           python -m pip install "numpy>=1.26"
 
-      - name: Run organism and vector tests
+      - name: Run complete CPU test suite
         run: |
-          python -m unittest \
-            tests.test_organism \
-            tests.test_probe_analysis \
-            tests.test_interoception_vectors
+          python -m unittest discover -s tests -p "test_*.py"

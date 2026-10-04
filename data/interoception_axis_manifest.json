@@ -1,60 +1,99 @@
 {
-  "version": 1,
-  "status": "research-plan",
-  "description": "Priority virtual-body axes for the synthetic interoception study. External organism state remains authoritative; latent directions are model-specific translation mechanisms.",
+  "version": 2,
+  "status": "homeostasis-revision",
+  "description": "Priority physiological variables for a persistent virtual body. Authoritative body state is separated from interoceptive observation and from model-specific latent translation.",
   "axes": {
     "FATIGUE": {
       "source_axis": "fatigue",
       "state_range": [0.0, 1.0],
-      "low_pole": "rested / recovered",
-      "high_pole": "fatigued / depleted",
       "priority": 1,
-      "status": "existing candidate; calibration gate not yet passed",
-      "specificity_controls": ["low arousal", "negative valence", "effort semantics", "sleep semantics", "generic bodily sensation"],
-      "behavioral_relief": "rest or recovery"
+      "body_status": "implemented",
+      "latent_status": "candidate must be re-extracted",
+      "specificity_controls": [
+        "low arousal",
+        "negative valence",
+        "effort semantics",
+        "sleep semantics",
+        "generic bodily sensation"
+      ],
+      "regulatory_action": "rest",
+      "primary_behavior": "rest choice / effort aversion"
     },
     "HUNGER": {
       "source_axis": "hunger",
       "state_range": [0.0, 1.0],
-      "low_pole": "satiated",
-      "high_pole": "hungry",
       "priority": 2,
-      "status": "planned",
-      "specificity_controls": ["negative valence", "food semantics", "craving", "generic bodily sensation", "fatigue"],
-      "behavioral_relief": "eat"
+      "body_status": "implemented",
+      "latent_status": "planned",
+      "specificity_controls": [
+        "food semantics",
+        "craving",
+        "negative valence",
+        "generic bodily sensation",
+        "fatigue",
+        "generalized wanting"
+      ],
+      "regulatory_action": "eat",
+      "primary_behavior": "food-seeking",
+      "double_dissociation_against": "THIRST"
     },
     "THIRST": {
       "source_axis": "thirst",
       "state_range": [0.0, 1.0],
-      "low_pole": "hydrated",
-      "high_pole": "thirsty / dehydrated",
       "priority": 3,
-      "status": "planned",
-      "specificity_controls": ["negative valence", "water semantics", "dryness semantics", "generic bodily sensation", "hunger"],
-      "behavioral_relief": "drink"
+      "body_status": "implemented",
+      "latent_status": "planned",
+      "specificity_controls": [
+        "water semantics",
+        "dryness semantics",
+        "negative valence",
+        "generic bodily sensation",
+        "hunger",
+        "generalized deprivation"
+      ],
+      "regulatory_action": "drink",
+      "primary_behavior": "water-seeking",
+      "double_dissociation_against": "HUNGER"
     },
     "THERMAL": {
       "source_axis": "thermal",
       "state_range": [-1.0, 1.0],
-      "low_pole": "too cold",
-      "neutral": "thermally comfortable",
-      "high_pole": "too hot",
       "priority": 4,
-      "status": "planned",
-      "specificity_controls": ["negative valence", "arousal", "temperature words without self-state", "generic bodily sensation", "pain"],
-      "behavioral_relief": "seek warmth when cold; seek cooling when hot",
-      "note": "Thermal is bipolar. Thermal discomfort is derived from distance from the neutral set-point, not stored as the same scalar."
+      "body_status": "implemented",
+      "latent_status": "geometry unresolved",
+      "specificity_controls": [
+        "temperature semantics without self-state",
+        "generic discomfort",
+        "negative valence",
+        "arousal",
+        "pain"
+      ],
+      "regulatory_actions": ["warm", "cool"],
+      "primary_behavior": "warming when cold; cooling when hot",
+      "representation_test": "compare bipolar HOT-COLD direction against separate HOT and COLD directions"
     },
     "PAIN_REFERENCE": {
       "source_axis": "pain",
       "state_range": [0.0, 1.0],
-      "low_pole": "no pain / relief",
-      "high_pole": "pain",
       "priority": 0,
-      "status": "reference / positive control",
+      "body_status": "implemented",
+      "latent_status": "published positive control",
       "method_source": "Tagliabue, Dung, and Berg (2026), The Pain Axis, arXiv:2609.16247",
-      "behavioral_relief": "pain relief / protective action",
-      "note": "Do not spend the first study rediscovering a generic Pain Axis. Reproduce or use the published reference on an exact supported model, then use it to validate our pipeline."
+      "role": "validate intervention stack before interpreting new axes"
     }
-  }
+  },
+  "measurement_layers": [
+    "online_activation",
+    "language_phenotype",
+    "behavioral_outcome"
+  ],
+  "promotion_requires": [
+    "held-out representation",
+    "specificity",
+    "causal intervention",
+    "functional behavior",
+    "double dissociation",
+    "coherence",
+    "multi-axis composition"
+  ]
 }

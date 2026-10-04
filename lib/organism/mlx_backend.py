@@ -77,18 +77,28 @@ class MLXCognitiveBackend:
             unwrap(self.model, originals)
 
         text = _scrub_output(raw)
-        readback, raw_projection = self._readback(prompt, text, tuple(steering_alphas))
+        phenotype, raw_projection = self._phenotype_projection(
+            prompt,
+            text,
+            tuple(steering_alphas),
+        )
         return CognitiveResponse(
             text=text,
-            readback=readback,
+            readback={},
+            online_activation={},
+            phenotype_projection=phenotype,
             raw_projection=raw_projection,
             metadata={
                 "model_id": self.model_id,
                 "steering_alphas": dict(steering_alphas),
+                "measurement_note": (
+                    "phenotype_projection is computed by re-encoding generated text; "
+                    "it is not an online activation measurement"
+                ),
             },
         )
 
-    def _readback(
+    def _phenotype_projection(
         self,
         prompt: str,
         output_text: str,
@@ -98,7 +108,7 @@ class MLXCognitiveBackend:
             return {}, {}
         missing = sorted(axis for axis in axes if axis not in self.probes.selected_layers)
         if missing:
-            raise KeyError(f"Readback axes missing selected layers: {missing}")
+            raise KeyError(f"Projection axes missing selected layers: {missing}")
 
         from ..mlx_steering import extract_last_token_hiddens
 

@@ -1,4 +1,4 @@
-"""Axis-agnostic latent-direction helpers for synthetic interoception.
+"""Axis-agnostic latent-direction helpers for virtual physiological-state steering.
 
 The denoising recipe is adapted conceptually from Tagliabue, Dung, and Berg
 (2026), "The Pain Axis: LLMs Represent Self-Directed Harm and Act to Relieve
@@ -51,14 +51,7 @@ def denoised_difference_of_means(
     *,
     variance_to_remove: float = 0.50,
 ) -> DenoisedDirection:
-    """Return a unit latent direction after removing dominant control variance.
-
-    The raw direction is mean(target) - mean(control). PCA is performed only
-    on the centered control cloud. Enough leading control principal components
-    are removed to account for variance_to_remove of control variance.
-
-    variance_to_remove=0 disables denoising.
-    """
+    """Return a unit latent direction after removing dominant control variance."""
 
     if not 0.0 <= variance_to_remove < 1.0:
         raise ValueError("variance_to_remove must be in [0, 1)")
@@ -123,6 +116,30 @@ def projection_scores(activations: np.ndarray, direction: np.ndarray) -> np.ndar
     if norm <= 1e-12:
         raise ValueError("direction must be non-zero")
     return (acts @ (vec / norm)).astype(np.float64)
+
+
+def coefficient_for_residual_ratio(
+    direction: np.ndarray,
+    mean_residual_norm: float,
+    target_ratio: float,
+) -> float:
+    """Convert a dimensionless residual-stream dose into a vector coefficient.
+
+    target_ratio is signed and represents ||alpha * v|| / E[||h||], with sign
+    selecting the pole. This makes dose comparable across vectors with
+    different norms and across model/layer combinations.
+    """
+
+    vec = np.asarray(direction, dtype=np.float64)
+    if vec.ndim != 1:
+        raise ValueError("direction must be one-dimensional")
+    norm = float(np.linalg.norm(vec))
+    if norm <= 1e-12:
+        raise ValueError("direction must be non-zero")
+    residual_norm = float(mean_residual_norm)
+    if residual_norm <= 0.0:
+        raise ValueError("mean_residual_norm must be positive")
+    return float(target_ratio) * residual_norm / norm
 
 
 def direction_cosines(

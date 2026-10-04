@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 
 from lib.organism.interoception_vectors import (
+    coefficient_for_residual_ratio,
     denoised_difference_of_means,
     direction_cosines,
     projection_scores,
@@ -21,12 +22,7 @@ class InteroceptionVectorTests(unittest.TestCase):
                 [3.0, 0.0],
             ]
         )
-        targets = np.array(
-            [
-                [1.0, 2.0],
-                [1.0, 2.0],
-            ]
-        )
+        targets = np.array([[1.0, 2.0], [1.0, 2.0]])
 
         result = denoised_difference_of_means(
             targets,
@@ -59,6 +55,20 @@ class InteroceptionVectorTests(unittest.TestCase):
         acts = np.array([[0.0, 0.0], [0.0, 1.0], [0.0, 2.0]])
         scores = projection_scores(acts, np.array([0.0, 1.0]))
         self.assertTrue(np.all(np.diff(scores) > 0))
+
+    def test_residual_ratio_dose_is_norm_invariant(self):
+        alpha_a = coefficient_for_residual_ratio(
+            np.array([3.0, 4.0]),
+            mean_residual_norm=20.0,
+            target_ratio=0.25,
+        )
+        alpha_b = coefficient_for_residual_ratio(
+            np.array([6.0, 8.0]),
+            mean_residual_norm=20.0,
+            target_ratio=0.25,
+        )
+        self.assertAlmostEqual(alpha_a * 5.0, 5.0)
+        self.assertAlmostEqual(alpha_b * 10.0, 5.0)
 
     def test_direction_cosines_reports_overlap(self):
         result = direction_cosines(
